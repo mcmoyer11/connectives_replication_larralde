@@ -27,6 +27,7 @@ Template("Exp2_warmup1.csv",
         getImage("cross")
         .remove()
         ,
+        // presentation of the target
         newText("one", row.Screen1).settings.css("font-size","70").print(),
         getText("next").print(),
         newKey(" ").wait(" ").log(),
@@ -38,8 +39,10 @@ Template("Exp2_warmup1.csv",
         getText("next").print(),
         newKey(" ").wait(" ").log(),
         getText ("two").remove (),
-        getText("next").remove(),
+        getText("next").remove()
+        ,
         
+        // presentation of the word
         newText("three", row.Screen11).settings.css("font-size","70"),
         newText("four", row.Screen12).settings.css("font-size","70"),
         newText("five", row.Screen13).settings.css("font-size","70"),

@@ -186,7 +186,7 @@ Template("warm_up_2.csv",
                 newTimer("wait", 1500)
                     .start()
                     .wait()
-                )
+            )
         ,
         getKey("select")
             .test.pressed(row.Screen9)
@@ -201,10 +201,21 @@ newTrial("end of warmup",
     newText("You have successfully completed the practice round!")
         .print()
     ,
-    newText("Please, make sure to keep your index fingers on the <strong>F</strong> and <strong>J</strong> keys.").print(),
-    newText("<br>").print(),
-    newImage("fingers.png").center().size(500, 229).print(),
-    newText("Press <strong>SPACE BAR</strong> to start the experiment.").center().print(),
+    newText("Please, make sure to keep your index fingers on the <strong>F</strong> and <strong>J</strong> keys.")
+        .print()
+    ,
+    newText("<br>")
+        .print()
+    ,
+    newImage("fingers.png")
+        .center()
+        .size(500, 229)
+        .print()
+    ,
+    newText("Press <strong>SPACE BAR</strong> to start the experiment.")
+        .center()
+        .print()
+    ,
     newKey(" ")
         .wait(" ")
 )
