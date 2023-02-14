@@ -2,14 +2,26 @@
 Template("Exp2_warmup1.csv", 
     row => newTrial( "warmup1",
         newText("next","<br>Press SPACE BAR to continue")
-            .center(),
-        newText("wait","You will now see a cross. The first part of the hint will appear shortly after the cross.").center().print()
+            .center()
         ,
-        getText("next").print(),
-        newKey(" ").wait(" "),
-        getText("wait").remove(),getText("next").remove(),
+        newText("wait","You will now see a cross. The first part of the hint will appear shortly after the cross.")
+            .center()
+            .print()
+        ,
+        getText("next")
+            .print(),
+        newKey(" ")
+            .wait(" ")
+        ,
+        getText("wait")
+            .remove()
+        ,
+        getText("next")
+            .remove()
+        ,
         //newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),
-        newImage("cross","cross.png").print(),
+        newImage("cross","cross.png")
+            .print(),
         newTimer("wait", 700).start().wait()
         ,
         getImage("cross")
@@ -49,8 +61,8 @@ Template("Exp2_warmup1.csv",
         .settings.add( 88, 90,getText("instruction3"))
         .settings.add( 180, 90,getText("instruction4"))
         .print(),
-        newText("instruction3","<strong>[ F ]</strong><br><i>disagree"),
-        newText("instruction4","<strong>[ J ]</strong><br><i>agree"),
+        // newText("instruction3","<strong>[ F ]</strong><br><i>disagree"),
+        // newText("instruction4","<strong>[ J ]</strong><br><i>agree"),
         newKey("select","FJ").log().wait(" ").log(),
         getKey("select")
             .test.pressed(row.Answer)
@@ -120,45 +132,6 @@ Template("Exp2_warmup2.csv",
             .failure(getVar("score").set(v => 0))
 
 ))
-/*Template("warmup_two.csv", 
-    row => newTrial( "warmup3",
-        getVar("score")
-        .test.is(3).success(end()),
-        newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),
-        newImage("cross","cross.png").print()
-        ,
-        newTimer("wait", 700).start().wait()
-        ,
-        getImage("cross").remove(),
-        newText("one", row.Screen1).settings.css("font-size","70").print()
-        ,
-        newTimer("wait",1100).start().wait(),
-        getText ("one")
-        .remove ()
-        ,
-        newText("two", row.Screen2).settings.css("font-size","70").print()
-        ,
-        newKey(" ")
-         .wait(" ")
-         .log()
-        ,
-        getText ("two")
-        .remove (),
-        newText("four", row.Screen4).settings.css("font-size","70").print(),
-        newText("instruction3","<strong>[ J ]</strong> <br><i>agree"),
-        newText("instruction4","<strong>[ F ]</strong> <br><i>disagree"),
-        newCanvas("FJ", 800, 130)
-        .add(   100, 90, getText("instruction4"))
-        .add( 170, 90, getText("instruction3"))
-        .print(),
-        newKey("select","FJ").wait().log(),
-        getKey("select")
-            .test.pressed(row.Screen7)
-            .success(getVar("score").set( v => v+1 ))
-            .failure(getVar("score").set(v => 0),newText("false","Wrong answer!").color("red").print(),newTimer("wait", 1500).start().wait())
-
-))
-*/
 
 newTrial( "end of warmup" ,
     newText("You have successfully completed the practice round!")
