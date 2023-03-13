@@ -2,32 +2,19 @@
 Template("Exp2_warmup1.csv", 
     row => newTrial( "warmup1",
         newText("next","<br>Press SPACE BAR to continue")
-            .center()
+            .center(),
+        newText("wait","You will now see a cross. The first part of the hint will appear shortly after the cross.").center().print()
         ,
-        newText("wait","You will now see a cross. The first part of the hint will appear shortly after the cross.")
-            .center()
-            .print()
-        ,
-        getText("next")
-            .print(),
-        newKey(" ")
-            .wait(" ")
-        ,
-        getText("wait")
-            .remove()
-        ,
-        getText("next")
-            .remove()
-        ,
+        getText("next").print(),
+        newKey(" ").wait(" "),
+        getText("wait").remove(),getText("next").remove(),
         //newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),newText("space","<br>").print(),
-        newImage("cross","cross.png")
-            .print(),
+        newImage("cross","cross.png").print(),
         newTimer("wait", 700).start().wait()
         ,
         getImage("cross")
         .remove()
         ,
-        // presentation of the target
         newText("one", row.Screen1).settings.css("font-size","70").print(),
         getText("next").print(),
         newKey(" ").wait(" ").log(),
@@ -39,10 +26,8 @@ Template("Exp2_warmup1.csv",
         getText("next").print(),
         newKey(" ").wait(" ").log(),
         getText ("two").remove (),
-        getText("next").remove()
-        ,
+        getText("next").remove(),
         
-        // presentation of the word
         newText("three", row.Screen11).settings.css("font-size","70"),
         newText("four", row.Screen12).settings.css("font-size","70"),
         newText("five", row.Screen13).settings.css("font-size","70"),

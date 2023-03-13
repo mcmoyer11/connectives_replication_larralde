@@ -1,0 +1,396 @@
+---
+title: "Pre-processing for Replication of Larralde et Novekc (in prep)"
+author: Morgan Moyer
+date: 6 March, 2023
+output: html_document
+---
+
+```{r setup, include=FALSE, warning=FALSE, echo=FALSE}
+library(ggplot2)
+library(lme4)
+library(lmerTest)
+library(multcomp) # not available for this version of R
+library(stringr)
+library(textstem)
+library(tidyverse)
+theme_set(theme_bw())
+cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73","#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00","#009E73")
+this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
+setwd(this.dir)
+source("../../helpers.R")
+```
+
+
+```{r}
+# User-defined function to read in PCIbex Farm results files
+read.pcibex <- function(filepath, auto.colnames=TRUE, fun.col=function(col,cols){cols[cols==col]<-paste(col,"Ibex",sep=".");return(cols)}) {
+  n.cols <- max(count.fields(filepath,sep=",",quote=NULL),na.rm=TRUE)
+  if (auto.colnames){
+    cols <- c()
+    con <- file(filepath, "r")
+    while ( TRUE ) {
+      line <- readLines(con, n = 1, warn=FALSE)
+      if ( length(line) == 0) {
+        break
+      }
+      m <- regmatches(line,regexec("^# (\\d+)\\. (.+)\\.$",line))[[1]]
+      if (length(m) == 3) {
+        index <- as.numeric(m[2])
+        value <- m[3]
+        if (is.function(fun.col)){
+         cols <- fun.col(value,cols)
+        }
+        cols[index] <- value
+        if (index == n.cols){
+          break
+        }
+      }
+    }
+    close(con)
+    return(read.csv(filepath, comment.char="#", header=FALSE, col.names=cols))
+  }
+  else{
+    return(read.csv(filepath, comment.char="#", header=FALSE, col.names=seq(1:n.cols)))
+  }
+}
+
+```
+
+
+```{r}
+# Read in the results
+
+d <- read.pcibex("../data/results.csv")
+
+d$ID = as.factor(d$ID)
+
+dt <- d %>% 
+  filter(Connective %in% c("and","but","so"))
+
+dt$ReactionTime1 <- as.numeric(dt$ReactionTime1)
+summary(dt$ReactionTime1)
+```
+
+```{r}
+# View(d)
+nrow(d) #67440
+
+length(unique(d$ID)) # 93
+
+names(d)
+# View(d)
+```
+
+# Take a look at comments and Problems
+```{r}
+unique(d$PennElementType)
+gender <- d %>% 
+  group_by(Gender) %>% 
+  summarize(count = n())
+View(gender)
+
+table(d$Gender)
+
+h <- d %>% 
+  group_by(Handedness) %>% 
+  summarize(count = n())
+View(h)
+
+table(d$Handedness)
+
+table(d$Age)
+```
+
+
+
+# Accuracy on Fillers
+
+```{r, graph false response fillers}
+agr <- d %>%
+  filter(grepl("filler",Connective)) %>% 
+  group_by(Connective) %>%
+  mutate(mean_accuracy = mean(Answeraccuracy))
+
+dodge = position_dodge(.9)
+ggplot(data=agr, aes(x=Connective,y=mean_accuracy,fill=Connective)) +
+  geom_bar(position=dodge,stat="identity")
+
+```
+
+## Look overall by-subject mean accuracy on fillers
+```{r}
+agr <- d_fillers %>%
+  group_by(ID,Connective) %>%
+  summarize(mean_accuracy = mean(Answeraccuracy))
+
+dodge = position_dodge(.9)
+ggplot(data=agr, aes(x=reorder(ID,mean_accuracy),y=mean_accuracy)) +
+  facet_wrap(~Connective) +
+  geom_bar(position=dodge,stat="identity")
+  # theme(legend.position = "none")
+```
+
+
+
+# Accuracy on Test Trials
+```{r}
+agr <- d %>%
+  filter(Connective %in% c("and","but","so")) %>% 
+  group_by(Connective) %>%
+  mutate(mean_accuracy = mean(Answeraccuracy))
+
+dodge = position_dodge(.9)
+ggplot(data=agr, aes(x=Connective,y=mean_accuracy,fill=Connective)) +
+  geom_bar(position=dodge,stat="identity")
+```
+
+
+# No participants removed for inaccurary using the 3*sd below mean criterion
+
+Grand mean on answer accuracy or mean grouped by condition?
+including fillers ?
+
+
+```{r}
+d.test <- d %>% 
+  filter(Connective %in% c("and","but","so"))
+
+d.test$Answeraccuracy <- as.numeric(d.test$Answeraccuracy)
+
+mean(d.test$Answeraccuracy)
+sd(d.test$Answeraccuracy)
+```
+
+```{r}
+# 5d52b9b351ffbf00019fc578
+# 634d7cc0e97a59c026529228
+# 5fb3a3c38a7d5903b43c1949
+
+d.test.clean <- d.test %>% 
+  filter(!ID %in% c("5fb3a3c38a7d5903b43c1949",
+           "634d7cc0e97a59c026529228",
+         "5d52b9b351ffbf00019fc578"))
+
+```
+
+
+```{r}
+
+# three sd below
+AccuracyCuttoff <- mean(d.test$Answeraccuracy) - 2.5*sd(d.test$Answeraccuracy)
+AccuracyCuttoff
+
+part.means <- d.test.clean %>% 
+  group_by(ID) %>% 
+  summarize(individualmeanAccuracy = mean(Answeraccuracy))
+
+View(part.means)
+
+mean(part.means$individualmeanAccuracy)
+gmsd <- sd(part.means$individualmeanAccuracy)
+
+
+AccuracyCuttoff <- mean(d.test$Answeraccuracy) - 2.5*gmsd
+AccuracyCuttoff
+
+# filter out participants with accuracy lower than grand mean
+
+inacc <- d.test %>% 
+  group_by(ID) %>% 
+  summarize(individualmeanAccuracy = mean(Answeraccuracy)) %>% 
+  filter(individualmeanAccuracy < AccuracyCuttoff)
+
+
+length(unique(inacc$ID)) # 0
+
+View(inacc)
+
+```
+
+# remove unsucessful trials 
+
+```{r}
+d.test.clean.sucessful <- d.test.clean %>% 
+  group_by(ID,TrialID) %>% 
+  filter(Answeraccuracy != "0")
+
+nrow(d.test.clean.sucessful)/nrow(d.test.clean)
+```
+
+
+# Single round outlier removal: Remove 2,5 SDV above RT1 and RT2 means
+
+## RT1
+```{r, trialRT outliers}
+d.test.clean.sucessful$ReactionTime1 <- as.numeric(d.test.clean.sucessful$ReactionTime1)
+
+summary(d.test.clean.sucessful$ReactionTime1)
+    # Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    #  1.0    655.0    863.5   1374.1   1215.2 602205.0 
+
+hist(d.test.clean.sucessful$ReactionTime1, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+
+# cutoff criterion 2.5 * sd of mean 
+n <- sd(d.test.clean.sucessful$ReactionTime1)*2.5 # 28192.71
+n
+# remove subjects with RT higher than 3 x IQR
+df.rt1.clean.sucessful.no.outliers <- subset(d.test.clean.sucessful, d.test.clean.sucessful$ReactionTime1 < n)
+
+hist(df.rt1.clean.sucessful.no.outliers$ReactionTime1, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+
+nrow(df.rt1.clean.sucessful.no.outliers)/nrow(d.test) # 88%
+```
+
+```{r}
+write.csv(df.rt1.clean.sucessful.no.outliers,"../data/rt1_processed.csv")
+```
+
+
+## RT2
+```{r, trialRT outliers}
+d$ReactionTime2 <- as.numeric(d$ReactionTime2)
+
+d.test <- d %>% 
+  filter(Connective %in% c("and","but","so"))
+
+summary(d.test$ReactionTime2)
+   # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   #   61     760    1002    1180    1391   15797 
+
+hist(d.test$ReactionTime2, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+
+# cutoff criterion 2.5 * sd of mean 
+n <- sd(d.test$ReactionTime2)*2.5 # 1781.288
+n
+# remove subjects with RT higher than 3 x IQR
+df.rt2.clean <- subset(d.test, d.test$ReactionTime2 < n)
+
+hist(df.rt2.clean$ReactionTime2, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+
+nrow(df.rt2.clean)/nrow(d.test) # 87%
+```
+
+```{r}
+write.csv(df.rt1.clean,"../data/rt2_processed.csv")
+```
+
+
+# Double outlier remova
+
+## First remove subjects with trialRT higher than 3x IQR for double processing
+
+
+### Look at overall trial time
+```{r, trialRT outliers}
+d_TT <- d %>%
+  filter(Parameter == "_Trial_") %>% 
+    group_by(ID,TrialID) %>%
+    summarize(trialRT = EventTime[Value=="End"] - EventTime[Value=="Start"])
+
+
+ggplot(d_TT, aes(x=trialRT)) +
+  geom_density(alpha = .4)
+  # geom_histogram(stat="count")
+
+
+summary(d_TT$trialRT)
+   # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   #  250    3006    3950    5406    5263 1006263 
+range(d_TT$trialRT)
+
+hist(d_TT$trialRT, breaks=100, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+```
+
+## Remove them
+```{r, trialRT outliers}
+# determine cutoff criterion
+n <- quantile(d_TT$trialRT)[4] + IQR(d_TT$trialRT)*3 # 12034.75
+
+# remove subjects with RT higher than 3 x IQR
+df.goodguys <- subset(d_TT, d_TT$trialRT < n)
+
+hist(df.goodguys$trialRT, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+
+# View(df.goodguys)
+```
+
+```{r, trialRT outliers}
+df.goodguys$unique <- paste(df.goodguys$ID,df.goodguys$TrialID,sep="_")
+# add unique column to d so we can filter outliers
+d$unique <- paste(d$ID,d$TrialID,sep="_")
+
+total_good <- d %>% 
+  filter(unique %in% df.goodguys$unique)
+
+nrow(total_good)/nrow(d) # .9185
+```
+
+
+## Second, remove 2,5 SDV above for RT1 and RT2 means
+
+### RT1
+```{r, trialRT outliers}
+total_good$ReactionTime1 <- as.numeric(total_good$ReactionTime1)
+
+d.test <- total_good %>% 
+  filter(Connective %in% c("and","but","so"))
+
+summary(d.test$ReactionTime1)
+    # Min.  1st Qu.   Median     Mean  3rd Qu.     Max. 
+    #  1.0    655.0    863.5   1374.1   1215.2 602205.0 
+
+hist(d.test$ReactionTime1, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+
+# cutoff criterion 2.5 * sd of mean 
+n <- sd(d.test$ReactionTime1)*2.5 # 28192.71
+n
+# remove subjects with RT higher than 3 x IQR
+df.double.rt1.clean <- subset(d.test, d.test$ReactionTime1 < n)
+
+hist(df.double.rt1.clean$ReactionTime1, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+
+nrow(df.double.rt1.clean)/nrow(d.test) # 0.8867045
+```
+
+```{r}
+write.csv(df.double.rt1.clean,"../data/rt1_double_processed.csv")
+```
+
+
+## RT2
+```{r, trialRT outliers}
+total_good$ReactionTime2 <- as.numeric(total_good$ReactionTime2)
+
+d.test <- total_good %>% 
+  filter(Connective %in% c("and","but","so"))
+
+summary(d.test$ReactionTime2)
+   # Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   #   61     760    1002    1180    1391   15797 
+
+hist(d.test$ReactionTime2, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+
+# cutoff criterion 2.5 * sd of mean 
+n <- sd(d.test$ReactionTime2)*2.5 # 1781.288
+n
+# remove subjects with RT higher than 3 x IQR
+df.double.rt2.clean <- subset(d.test, d.test$ReactionTime2 < n)
+
+hist(df.double.rt2.clean$ReactionTime2, col="red", xlab="RT (ms)",
+        main="Histogram with Normal Curve")
+
+nrow(df.double.rt2.clean)/nrow(d.test) # 0.8453587
+```
+
+```{r}
+write.csv(df.double.rt1.clean,"../data/rt2_double_processed.csv")
+```
