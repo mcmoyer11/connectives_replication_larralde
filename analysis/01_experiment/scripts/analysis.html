@@ -363,386 +363,201 @@ replication</h1>
 </div>
 
 
-<div id="first-looking-at-just-single-processed-data-no-overal-trial-rt-outlier-removal" class="section level1">
-<h1>First looking at just single-processed data (no overal trial RT
-outlier removal)</h1>
-<pre class="r"><code>names(d.rt1)</code></pre>
-<pre><code>##  [1] &quot;X&quot;                                   
-##  [2] &quot;Results.reception.time&quot;              
-##  [3] &quot;MD5.hash.of.participant.s.IP.address&quot;
-##  [4] &quot;Controller.name&quot;                     
-##  [5] &quot;Order.number.of.item&quot;                
-##  [6] &quot;Inner.element.number&quot;                
-##  [7] &quot;Label&quot;                               
-##  [8] &quot;Latin.Square.Group&quot;                  
-##  [9] &quot;PennElementType&quot;                     
-## [10] &quot;PennElementName&quot;                     
-## [11] &quot;Parameter&quot;                           
-## [12] &quot;Value&quot;                               
-## [13] &quot;EventTime&quot;                           
-## [14] &quot;ID&quot;                                  
-## [15] &quot;Age&quot;                                 
-## [16] &quot;Gender&quot;                              
-## [17] &quot;Handedness&quot;                          
-## [18] &quot;ReactionTime1&quot;                       
-## [19] &quot;ReactionTime2&quot;                       
-## [20] &quot;ReactionTime3&quot;                       
-## [21] &quot;Connective&quot;                          
-## [22] &quot;TrialID&quot;                             
-## [23] &quot;Wordform&quot;                            
-## [24] &quot;Truthvalue&quot;                          
-## [25] &quot;Sentenceform&quot;                        
-## [26] &quot;Answeraccuracy&quot;                      
-## [27] &quot;Group&quot;                               
-## [28] &quot;Comments&quot;</code></pre>
-<pre class="r"><code>View(d.rt1)
-# Make everything into a factor
-d.rt1$Connective = as.factor(d.rt1$Connective)
-d.rt1$ID = as.factor(d.rt1$ID)
-d.rt1$TrialID = as.factor(d.rt1$TrialID)
-d.rt1$ReactionTime1 = as.numeric(d.rt1$ReactionTime1)
-d.rt1$LogRT1 = log(d.rt1$ReactionTime1)
-
-
-contrasts(d.rt1$Connective)</code></pre>
-<pre><code>##     but so
-## and   0  0
-## but   1  0
-## so    0  1</code></pre>
-<pre class="r"><code>d.rt2$Connective = as.factor(d.rt2$Connective)
-d.rt2$ID = as.factor(d.rt2$ID)
-d.rt2$TrialID = as.factor(d.rt2$TrialID)
-d.rt2$ReactionTime2 = as.numeric(d.rt2$ReactionTime2)
-d.rt2$LogRT2 = log(d.rt2$ReactionTime2)
-d.rt2$Truthvalue = as.factor(d.rt2$Truthvalue)
-d.rt2$Sentenceform = as.factor(d.rt2$Sentenceform)</code></pre>
-</div>
-<div id="simple-model-logrt1-connective" class="section level1">
-<h1>simple model logRT1 ~ Connective</h1>
-<ul>
-<li>not sognificant</li>
-</ul>
-<pre class="r"><code>m.rt1 = lmer(LogRT1 ~ Connective + (1+Connective|ID) + (1|TrialID), data=d.rt1)
-# saveRDS(m.ms.ma.full, &quot;../models/model-task-para.rds&quot;)
-
-# m &lt;- readRDS(&quot;../models/m.rds&quot;)
-summary(m.rt1)</code></pre>
+<div id="reaction-time-1" class="section level1">
+<h1>Reaction Time 1</h1>
+<div id="raw-rt" class="section level2">
+<h2>Raw RT</h2>
+<pre class="r"><code>d.raw.rt1 &lt;- d.raw.rt1 %&gt;% 
+  filter(Connective %in% c(&quot;and&quot;,&quot;but&quot;,&quot;so&quot;))
+m.raw.rt1 = lmer(ReactionTime1 ~ Connective + (1+Connective|ID) + (1|TrialID), data=d.raw.rt1)</code></pre>
+<pre><code>## boundary (singular) fit: see help(&#39;isSingular&#39;)</code></pre>
+<pre class="r"><code>summary(m.raw.rt1)</code></pre>
 <pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
 ## lmerModLmerTest]
-## Formula: LogRT1 ~ Connective + (1 + Connective | ID) + (1 | TrialID)
-##    Data: d.rt1
+## Formula: ReactionTime1 ~ Connective + (1 + Connective | ID) + (1 | TrialID)
+##    Data: d.raw.rt1
 ## 
-## REML criterion at convergence: 41179
+## REML criterion at convergence: 492728.2
 ## 
 ## Scaled residuals: 
-##      Min       1Q   Median       3Q      Max 
-## -11.7925  -0.3837  -0.0307   0.3890   5.9117 
+##    Min     1Q Median     3Q    Max 
+## -2.170 -0.023  0.002  0.040 49.842 
 ## 
 ## Random effects:
-##  Groups   Name          Variance Std.Dev. Corr       
-##  TrialID  (Intercept)   0.006939 0.0833              
-##  ID       (Intercept)   0.180385 0.4247              
-##           Connectivebut 0.026226 0.1619   -0.32      
-##           Connectiveso  0.032631 0.1806   -0.20  0.37
-##  Residual               0.297653 0.5456              
-## Number of obs: 24755, groups:  TrialID, 124; ID, 80
+##  Groups   Name          Variance  Std.Dev. Corr       
+##  TrialID  (Intercept)     3203587  1790               
+##  ID       (Intercept)     6037799  2457               
+##           Connectivebut  14254626  3776    -0.64      
+##           Connectiveso   11123395  3335    -0.74  0.99
+##  Residual               127924453 11310               
+## Number of obs: 22890, groups:  TrialID, 124; ID, 77
 ## 
 ## Fixed effects:
-##                Estimate Std. Error        df t value Pr(&gt;|t|)    
-## (Intercept)     6.73222    0.04989  92.17638 134.939   &lt;2e-16 ***
-## Connectivebut   0.04733    0.02716 157.55817   1.743   0.0833 .  
-## Connectiveso    0.02883    0.02921 155.37957   0.987   0.3252    
+##               Estimate Std. Error      df t value Pr(&gt;|t|)   
+## (Intercept)    1424.21     431.91  155.15   3.297  0.00121 **
+## Connectivebut    24.33     611.99  150.34   0.040  0.96835   
+## Connectiveso    -55.92     591.91  156.67  -0.094  0.92485   
 ## ---
 ## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
 ## 
 ## Correlation of Fixed Effects:
 ##             (Intr) Cnnctvb
-## Connectivbt -0.377        
-## Connectives -0.293  0.464</code></pre>
-</div>
-<div id="simple-model-logrt1-connective-1" class="section level1">
-<h1>simple model logRT1 ~ Connective</h1>
-<ul>
-<li>not sognificant</li>
-</ul>
-<pre class="r"><code>m.rt2 = lmer(LogRT2 ~ Connective*Truthvalue*Sentenceform + (1+Connective+Truthvalue+Sentenceform|ID) + (1|TrialID), data=d.rt2)</code></pre>
-<pre><code>## fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</code></pre>
-<pre class="r"><code># saveRDS(m.ms.ma.full, &quot;../models/model-task-para.rds&quot;)
-
-# m &lt;- readRDS(&quot;../models/m.rds&quot;)
-summary(m.rt2)</code></pre>
-<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
-## lmerModLmerTest]
-## Formula: LogRT2 ~ Connective * Truthvalue * Sentenceform + (1 + Connective +  
-##     Truthvalue + Sentenceform | ID) + (1 | TrialID)
-##    Data: d.rt2
-## 
-## REML criterion at convergence: 18734
-## 
-## Scaled residuals: 
-##     Min      1Q  Median      3Q     Max 
-## -7.3607 -0.6317 -0.1443  0.4966  5.6296 
-## 
-## Random effects:
-##  Groups   Name                         Variance Std.Dev. Corr             
-##  TrialID  (Intercept)                  0.003380 0.05814                   
-##  ID       (Intercept)                  0.106544 0.32641                   
-##           Connectivebut                0.012894 0.11355   0.00            
-##           Connectiveso                 0.019009 0.13787  -0.02  0.67      
-##           TruthvalueJ                  0.009488 0.09741  -0.03  0.01  0.00
-##           SentenceformPositivePositive 0.009168 0.09575  -0.14  0.11  0.13
-##  Residual                              0.118262 0.34389                   
-##       
-##       
-##       
-##       
-##       
-##       
-##   0.26
-##       
-## Number of obs: 24755, groups:  TrialID, 124; ID, 80
-## 
-## Fixed effects:
-##                                                          Estimate Std. Error
-## (Intercept)                                              6.946404   0.040781
-## Connectivebut                                            0.009372   0.028695
-## Connectiveso                                             0.060838   0.029998
-## TruthvalueJ                                              0.007370   0.052612
-## SentenceformPositivePositive                            -0.098630   0.027872
-## Connectivebut:TruthvalueJ                               -0.049672   0.057545
-## Connectiveso:TruthvalueJ                                -0.018735   0.044579
-## Connectivebut:SentenceformPositivePositive               0.159616   0.036389
-## Connectiveso:SentenceformPositivePositive                0.011909   0.036392
-## TruthvalueJ:SentenceformPositivePositive                 0.018352   0.044580
-## Connectivebut:TruthvalueJ:SentenceformPositivePositive  -0.025992   0.057545
-##                                                                df t value
-## (Intercept)                                            113.467583 170.336
-## Connectivebut                                          153.477900   0.327
-## Connectiveso                                           165.757216   2.028
-## TruthvalueJ                                            120.837316   0.140
-## SentenceformPositivePositive                           144.293008  -3.539
-## Connectivebut:TruthvalueJ                              111.141864  -0.863
-## Connectiveso:TruthvalueJ                               111.190652  -0.420
-## Connectivebut:SentenceformPositivePositive             111.074774   4.386
-## Connectiveso:SentenceformPositivePositive              111.114162   0.327
-## TruthvalueJ:SentenceformPositivePositive               111.199707   0.412
-## Connectivebut:TruthvalueJ:SentenceformPositivePositive 111.140116  -0.452
-##                                                        Pr(&gt;|t|)    
-## (Intercept)                                             &lt; 2e-16 ***
-## Connectivebut                                          0.744416    
-## Connectiveso                                           0.044152 *  
-## TruthvalueJ                                            0.888831    
-## SentenceformPositivePositive                           0.000541 ***
-## Connectivebut:TruthvalueJ                              0.389890    
-## Connectiveso:TruthvalueJ                               0.675096    
-## Connectivebut:SentenceformPositivePositive             2.63e-05 ***
-## Connectiveso:SentenceformPositivePositive              0.744097    
-## TruthvalueJ:SentenceformPositivePositive               0.681371    
-## Connectivebut:TruthvalueJ:SentenceformPositivePositive 0.652382    
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Correlation of Fixed Effects:
-##             (Intr) Cnnctvb Cnnctvs TrthvJ SntnPP Cnnctvb:TJ Cnnctvs:TJ
-## Connectivbt -0.284                                                    
-## Connectives -0.278  0.538                                             
-## TruthvalueJ -0.006  0.001  -0.209                                     
-## SntncfrmPsP -0.338  0.434   0.422  -0.205                             
-## Cnnctvbt:TJ  0.000 -0.200   0.192  -0.875  0.206                      
-## Cnnctvs:TrJ  0.000  0.000   0.000  -0.847  0.266  0.775               
-## Cnnctvb:SPP  0.223 -0.634  -0.303   0.173 -0.653  0.000     -0.204    
-## Cnnctvs:SPP  0.223 -0.317  -0.607   0.519 -0.653 -0.474     -0.408    
-## TrthvlJ:SPP  0.000  0.000   0.248  -0.847  0.000  0.775      0.667    
-## Cnnc:TJ:SPP  0.000  0.200  -0.192   0.656  0.000 -0.800     -0.517    
-##             Cnnctvb:SPP Cnnctvs:SPP TJ:SPP
-## Connectivbt                               
-## Connectives                               
-## TruthvalueJ                               
-## SntncfrmPsP                               
-## Cnnctvbt:TJ                               
-## Cnnctvs:TrJ                               
-## Cnnctvb:SPP                               
-## Cnnctvs:SPP  0.500                        
-## TrthvlJ:SPP  0.000      -0.408            
-## Cnnc:TJ:SPP -0.316       0.316      -0.775
-## fit warnings:
-## fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</code></pre>
-</div>
-<div id="second-looking-at-double-processed-data-no-overal-trial-rt-outlier-removal" class="section level1">
-<h1>Second looking at double-processed data (no overal trial RT outlier
-removal)</h1>
-<pre class="r"><code># Make everything into a factor
-d.rt1.double$Connective = as.factor(d.rt1.double$Connective)
-d.rt1.double$ID = as.factor(d.rt1.double$ID)
-d.rt1.double$TrialID = as.factor(d.rt1.double$TrialID)
-d.rt1.double$ReactionTime1 = as.numeric(d.rt1.double$ReactionTime1)
-d.rt1.double$LogRT1 = log(d.rt1.double$ReactionTime1)
-
-
-d.rt2.double$Connective = as.factor(d.rt2.double$Connective)
-d.rt2.double$ID = as.factor(d.rt2.double$ID)
-d.rt2.double$TrialID = as.factor(d.rt2.double$TrialID)
-d.rt2.double$ReactionTime2 = as.numeric(d.rt2.double$ReactionTime2)
-d.rt2.double$LogRT2 = log(d.rt2.double$ReactionTime2)
-d.rt2.double$Truthvalue = as.factor(d.rt2.double$Truthvalue)
-d.rt2.double$Sentenceform = as.factor(d.rt2.double$Sentenceform)</code></pre>
-</div>
-<div id="simple-model-logrt1-connective-2" class="section level1">
-<h1>simple model logRT1 ~ Connective</h1>
-<ul>
-<li>not sognificant</li>
-</ul>
-<pre class="r"><code>m.rt1.double = lmer(LogRT1 ~ Connective + (1+Connective|ID) + (1|TrialID), data=d.rt1.double)
-# saveRDS(m.ms.ma.full, &quot;../models/model-task-para.rds&quot;)
-
-# m &lt;- readRDS(&quot;../models/m.rds&quot;)
-summary(m.rt1.double)</code></pre>
-<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
-## lmerModLmerTest]
-## Formula: LogRT1 ~ Connective + (1 + Connective | ID) + (1 | TrialID)
-##    Data: d.rt1.double
-## 
-## REML criterion at convergence: 31007.6
-## 
-## Scaled residuals: 
-##      Min       1Q   Median       3Q      Max 
-## -12.9504  -0.3169   0.0401   0.4266   4.8353 
-## 
-## Random effects:
-##  Groups   Name          Variance Std.Dev. Corr       
-##  TrialID  (Intercept)   0.005411 0.07356             
-##  ID       (Intercept)   0.133229 0.36501             
-##           Connectivebut 0.015875 0.12600  -0.18      
-##           Connectiveso  0.028651 0.16927  -0.14  0.39
-##  Residual               0.232128 0.48180             
-## Number of obs: 21875, groups:  TrialID, 124; ID, 80
-## 
-## Fixed effects:
-##                Estimate Std. Error        df t value Pr(&gt;|t|)    
-## (Intercept)     6.63277    0.04306  92.41594 154.029   &lt;2e-16 ***
-## Connectivebut   0.04040    0.02298 154.57114   1.758   0.0808 .  
-## Connectiveso    0.03231    0.02677 150.80777   1.207   0.2292    
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Correlation of Fixed Effects:
-##             (Intr) Cnnctvb
-## Connectivbt -0.296        
-## Connectives -0.255  0.475</code></pre>
-</div>
-<div id="simple-model-logrt1-connective-3" class="section level1">
-<h1>simple model logRT1 ~ Connective</h1>
-<ul>
-<li>ME only from ‘and’ to ‘so’</li>
-<li>no 2-way with connective</li>
-<li>one three-way with connective</li>
-</ul>
-<pre class="r"><code>m.rt2.double = lmer(LogRT2 ~ Connective*Truthvalue*Sentenceform + (1+Connective+Truthvalue+Sentenceform|ID) + (1|TrialID), data=d.rt2.double)</code></pre>
-<pre><code>## fixed-effect model matrix is rank deficient so dropping 1 column / coefficient</code></pre>
-<pre><code>## Warning in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv, :
-## Model failed to converge with max|grad| = 0.00265918 (tol = 0.002, component 1)</code></pre>
-<pre class="r"><code># saveRDS(m.ms.ma.full, &quot;../models/model-task-para.rds&quot;)
-
-# m &lt;- readRDS(&quot;../models/m.rds&quot;)
-summary(m.rt2.double)</code></pre>
-<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
-## lmerModLmerTest]
-## Formula: LogRT2 ~ Connective * Truthvalue * Sentenceform + (1 + Connective +  
-##     Truthvalue + Sentenceform | ID) + (1 | TrialID)
-##    Data: d.rt2.double
-## 
-## REML criterion at convergence: 14893.6
-## 
-## Scaled residuals: 
-##     Min      1Q  Median      3Q     Max 
-## -7.6622 -0.6195 -0.1448  0.4945  5.5060 
-## 
-## Random effects:
-##  Groups   Name                         Variance Std.Dev. Corr             
-##  TrialID  (Intercept)                  0.003244 0.05696                   
-##  ID       (Intercept)                  0.104666 0.32352                   
-##           Connectivebut                0.016119 0.12696  -0.01            
-##           Connectiveso                 0.019346 0.13909   0.00  0.71      
-##           TruthvalueJ                  0.009296 0.09642  -0.06 -0.19 -0.17
-##           SentenceformPositivePositive 0.010090 0.10045  -0.17  0.00  0.17
-##  Residual                              0.108977 0.33012                   
-##       
-##       
-##       
-##       
-##       
-##       
-##   0.32
-##       
-## Number of obs: 21875, groups:  TrialID, 124; ID, 80
-## 
-## Fixed effects:
-##                                                          Estimate Std. Error
-## (Intercept)                                              6.929754   0.040401
-## Connectivebut                                            0.013977   0.029111
-## Connectiveso                                             0.066656   0.029792
-## TruthvalueJ                                             -0.007411   0.051963
-## SentenceformPositivePositive                            -0.098562   0.027786
-## Connectivebut:TruthvalueJ                               -0.036594   0.056805
-## Connectiveso:TruthvalueJ                                -0.013955   0.044020
-## Connectivebut:SentenceformPositivePositive               0.167098   0.035919
-## Connectiveso:SentenceformPositivePositive                0.002047   0.035912
-## TruthvalueJ:SentenceformPositivePositive                 0.032121   0.044018
-## Connectivebut:TruthvalueJ:SentenceformPositivePositive  -0.044221   0.056807
-##                                                                df t value
-## (Intercept)                                            112.565625 171.524
-## Connectivebut                                          160.530779   0.480
-## Connectiveso                                           165.865089   2.237
-## TruthvalueJ                                            120.320947  -0.143
-## SentenceformPositivePositive                           147.119560  -3.547
-## Connectivebut:TruthvalueJ                              110.526006  -0.644
-## Connectiveso:TruthvalueJ                               110.706714  -0.317
-## Connectivebut:SentenceformPositivePositive             110.442209   4.652
-## Connectiveso:SentenceformPositivePositive              110.347179   0.057
-## TruthvalueJ:SentenceformPositivePositive               110.690803   0.730
-## Connectivebut:TruthvalueJ:SentenceformPositivePositive 110.542751  -0.778
-##                                                        Pr(&gt;|t|)    
-## (Intercept)                                             &lt; 2e-16 ***
-## Connectivebut                                          0.631787    
-## Connectiveso                                           0.026595 *  
-## TruthvalueJ                                            0.886831    
-## SentenceformPositivePositive                           0.000523 ***
-## Connectivebut:TruthvalueJ                              0.520783    
-## Connectiveso:TruthvalueJ                               0.751819    
-## Connectivebut:SentenceformPositivePositive             9.18e-06 ***
-## Connectiveso:SentenceformPositivePositive              0.954657    
-## TruthvalueJ:SentenceformPositivePositive               0.467095    
-## Connectivebut:TruthvalueJ:SentenceformPositivePositive 0.437973    
-## ---
-## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
-## 
-## Correlation of Fixed Effects:
-##             (Intr) Cnnctvb Cnnctvs TrthvJ SntnPP Cnnctvb:TJ Cnnctvs:TJ
-## Connectivbt -0.281                                                    
-## Connectives -0.267  0.553                                             
-## TruthvalueJ -0.012 -0.019  -0.227                                     
-## SntncfrmPsP -0.349  0.400   0.427  -0.196                             
-## Cnnctvbt:TJ  0.000 -0.195   0.190  -0.875  0.204                      
-## Cnnctvs:TrJ  0.000  0.000   0.000  -0.847  0.264  0.775               
-## Cnnctvb:SPP  0.222 -0.616  -0.301   0.173 -0.646  0.000     -0.204    
-## Cnnctvs:SPP  0.222 -0.308  -0.602   0.518 -0.647 -0.474     -0.408    
-## TrthvlJ:SPP  0.000  0.000   0.245  -0.847  0.000  0.775      0.667    
-## Cnnc:TJ:SPP  0.000  0.195  -0.190   0.656  0.000 -0.800     -0.517    
-##             Cnnctvb:SPP Cnnctvs:SPP TJ:SPP
-## Connectivbt                               
-## Connectives                               
-## TruthvalueJ                               
-## SntncfrmPsP                               
-## Cnnctvbt:TJ                               
-## Cnnctvs:TrJ                               
-## Cnnctvb:SPP                               
-## Cnnctvs:SPP  0.500                        
-## TrthvlJ:SPP  0.000      -0.408            
-## Cnnc:TJ:SPP -0.316       0.316      -0.775
-## fit warnings:
-## fixed-effect model matrix is rank deficient so dropping 1 column / coefficient
+## Connectivbt -0.703        
+## Connectives -0.732  0.746 
 ## optimizer (nloptwrap) convergence code: 0 (OK)
-## Model failed to converge with max|grad| = 0.00265918 (tol = 0.002, component 1)</code></pre>
+## boundary (singular) fit: see help(&#39;isSingular&#39;)</code></pre>
+</div>
+<div id="logrt" class="section level2">
+<h2>LogRT</h2>
+<pre class="r"><code>d.log.rt1 &lt;- d.log.rt1 %&gt;% 
+  filter(Connective %in% c(&quot;and&quot;,&quot;but&quot;,&quot;so&quot;))
+
+m.log.rt1 = lmer(LogReactionTime1 ~ Connective + (1+Connective|ID) + (1|TrialID), data=d.log.rt1)
+
+summary(m.log.rt1)</code></pre>
+<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
+## lmerModLmerTest]
+## Formula: LogReactionTime1 ~ Connective + (1 + Connective | ID) + (1 |  
+##     TrialID)
+##    Data: d.log.rt1
+## 
+## REML criterion at convergence: 38162.4
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -11.7534  -0.3877  -0.0449   0.3455  11.9811 
+## 
+## Random effects:
+##  Groups   Name          Variance Std.Dev. Corr       
+##  TrialID  (Intercept)   0.007206 0.08489             
+##  ID       (Intercept)   0.119816 0.34614             
+##           Connectivebut 0.019862 0.14093  -0.36      
+##           Connectiveso  0.028873 0.16992  -0.21  0.24
+##  Residual               0.299070 0.54687             
+## Number of obs: 22890, groups:  TrialID, 124; ID, 77
+## 
+## Fixed effects:
+##                Estimate Std. Error        df t value Pr(&gt;|t|)    
+## (Intercept)     6.79271    0.04244  94.56513 160.061   &lt;2e-16 ***
+## Connectivebut   0.02957    0.02621 153.67877   1.128    0.261    
+## Connectiveso    0.02398    0.02901 151.98713   0.827    0.410    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##             (Intr) Cnnctvb
+## Connectivbt -0.424        
+## Connectives -0.328  0.420</code></pre>
+</div>
+<div id="raw-rt-x-order" class="section level2">
+<h2>Raw RT x Order</h2>
+<ul>
+<li>interaction</li>
+</ul>
+<pre class="r"><code>d.raw.rt1.centered &lt;- d.raw.rt1 %&gt;% 
+  filter(Connective %in% c(&quot;and&quot;,&quot;but&quot;,&quot;so&quot;)) %&gt;% 
+  mutate(cOrder = as.numeric(Order)-mean(as.numeric(Order)))
+
+m.raw.rt1.order = lmer(ReactionTime1 ~ Connective*cOrder + (1+Connective|ID) + (1|TrialID), data=d.raw.rt1.centered)</code></pre>
+<pre><code>## boundary (singular) fit: see help(&#39;isSingular&#39;)</code></pre>
+<pre class="r"><code>summary(m.raw.rt1.order)</code></pre>
+<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
+## lmerModLmerTest]
+## Formula: ReactionTime1 ~ Connective * cOrder + (1 + Connective | ID) +  
+##     (1 | TrialID)
+##    Data: d.raw.rt1.centered
+## 
+## REML criterion at convergence: 492675.9
+## 
+## Scaled residuals: 
+##    Min     1Q Median     3Q    Max 
+## -2.203 -0.029  0.006  0.041 49.817 
+## 
+## Random effects:
+##  Groups   Name          Variance  Std.Dev. Corr       
+##  TrialID  (Intercept)     3223218  1795               
+##  ID       (Intercept)     6085323  2467               
+##           Connectivebut  14205793  3769    -0.64      
+##           Connectiveso   11149362  3339    -0.74  0.99
+##  Residual               127860639 11308               
+## Number of obs: 22890, groups:  TrialID, 124; ID, 77
+## 
+## Fixed effects:
+##                      Estimate Std. Error       df t value Pr(&gt;|t|)    
+## (Intercept)           1426.21     433.25   155.20   3.292 0.001232 ** 
+## Connectivebut           21.52     612.24   150.68   0.035 0.972008    
+## Connectiveso           -57.45     593.05   156.80  -0.097 0.922955    
+## cOrder                 512.01     285.77 22104.49   1.792 0.073197 .  
+## Connectivebut:cOrder -1280.77     376.61 22650.43  -3.401 0.000673 ***
+## Connectiveso:cOrder   -637.88     392.73 22568.14  -1.624 0.104342    
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##             (Intr) Cnnctvb Cnnctvs cOrder Cnnctvb:O
+## Connectivbt -0.703                                 
+## Connectives -0.732  0.745                          
+## cOrder       0.003 -0.002  -0.002                  
+## Cnnctvbt:cO -0.002  0.002   0.002  -0.759          
+## Cnnctvs:cOr -0.002  0.001   0.000  -0.728  0.550   
+## optimizer (nloptwrap) convergence code: 0 (OK)
+## boundary (singular) fit: see help(&#39;isSingular&#39;)</code></pre>
+</div>
+<div id="logrt-x-order" class="section level2">
+<h2>LogRT x Order</h2>
+<ul>
+<li>interaction</li>
+</ul>
+<pre class="r"><code>d.log.rt1.centered &lt;- d.log.rt1 %&gt;% 
+  filter(Connective %in% c(&quot;and&quot;,&quot;but&quot;,&quot;so&quot;)) %&gt;% 
+  mutate(cOrder = as.numeric(Order)-mean(as.numeric(Order)))
+
+m.log.rt1.order = lmer(LogReactionTime1 ~ Connective*cOrder + (1+Connective|ID) + (1|TrialID), data=d.log.rt1.centered)</code></pre>
+<pre><code>## Warning in checkConv(attr(opt, &quot;derivs&quot;), opt$par, ctrl = control$checkConv, :
+## Model failed to converge with max|grad| = 0.00327169 (tol = 0.002, component 1)</code></pre>
+<pre class="r"><code>summary(m.log.rt1.order)</code></pre>
+<pre><code>## Linear mixed model fit by REML. t-tests use Satterthwaite&#39;s method [
+## lmerModLmerTest]
+## Formula: LogReactionTime1 ~ Connective * cOrder + (1 + Connective | ID) +  
+##     (1 | TrialID)
+##    Data: d.log.rt1.centered
+## 
+## REML criterion at convergence: 37994
+## 
+## Scaled residuals: 
+##      Min       1Q   Median       3Q      Max 
+## -11.8265  -0.3810  -0.0472   0.3362  11.9907 
+## 
+## Random effects:
+##  Groups   Name          Variance Std.Dev. Corr       
+##  TrialID  (Intercept)   0.007275 0.08529             
+##  ID       (Intercept)   0.119648 0.34590             
+##           Connectivebut 0.019766 0.14059  -0.36      
+##           Connectiveso  0.028270 0.16814  -0.21  0.24
+##  Residual               0.296625 0.54463             
+## Number of obs: 22890, groups:  TrialID, 124; ID, 77
+## 
+## Fixed effects:
+##                        Estimate Std. Error         df t value Pr(&gt;|t|)    
+## (Intercept)           6.792e+00  4.243e-02  9.479e+01 160.079  &lt; 2e-16 ***
+## Connectivebut         2.997e-02  2.624e-02  1.542e+02   1.142 0.255130    
+## Connectiveso          2.499e-02  2.893e-02  1.528e+02   0.864 0.389007    
+## cOrder               -1.061e-01  1.377e-02  2.218e+04  -7.706 1.35e-14 ***
+## Connectivebut:cOrder  6.523e-02  1.818e-02  2.261e+04   3.589 0.000333 ***
+## Connectiveso:cOrder  -3.710e-02  1.906e-02  2.272e+04  -1.946 0.051618 .  
+## ---
+## Signif. codes:  0 &#39;***&#39; 0.001 &#39;**&#39; 0.01 &#39;*&#39; 0.05 &#39;.&#39; 0.1 &#39; &#39; 1
+## 
+## Correlation of Fixed Effects:
+##             (Intr) Cnnctvb Cnnctvs cOrder Cnnctvb:O
+## Connectivbt -0.423                                 
+## Connectives -0.329  0.420                          
+## cOrder       0.001 -0.002  -0.002                  
+## Cnnctvbt:cO -0.001  0.002   0.001  -0.758          
+## Cnnctvs:cOr -0.001  0.002   0.000  -0.723  0.548   
+## optimizer (nloptwrap) convergence code: 0 (OK)
+## Model failed to converge with max|grad| = 0.00327169 (tol = 0.002, component 1)</code></pre>
+</div>
 </div>
 
 

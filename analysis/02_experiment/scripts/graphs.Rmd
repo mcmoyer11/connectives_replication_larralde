@@ -25,7 +25,7 @@ this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(this.dir)
 source("../../helpers.R")
 
-d.raw.rt1 <- read.csv("../data/raw_rt1_processed.csv")
+# d.raw.rt1 <- read.csv("../data/raw_rt1_processed.csv")
 d.log.rt1 <- read.csv("../data/log_rt1_processed.csv")
 
 # d.rt2 <- read.csv("../data/rt2_double_processed.csv")
@@ -35,9 +35,9 @@ d.log.rt1 <- read.csv("../data/log_rt1_processed.csv")
 
 ## Overall raw RT 1
 ```{r}
-d.raw.rt1$ReactionTime1 <- as.numeric(d.raw.rt1$ReactionTime1)
+d.log.rt1$ReactionTime1 <- as.numeric(d.log.rt1$ReactionTime1)
 
-agr <- d.raw.rt1 %>%
+agr <- d.log.rt1 %>%
   filter(Connective %in% c("and","but","so"))%>% 
   group_by(Connective) %>%
   summarize(meanRT1 = mean(ReactionTime1), CILow = ci.low(ReactionTime1), CIHigh = ci.high(ReactionTime1)) %>% 
@@ -49,8 +49,7 @@ ggplot(agr,aes(x=Connective, y=meanRT1, fill=Connective)) +
     geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge)
 ```
 
-
-## Overall raw RT 1
+#Log RT
 ```{r}
 d.log.rt1$LogReactionTime1 <- as.numeric(d.log.rt1$LogReactionTime1)
 
@@ -67,40 +66,32 @@ ggplot(agr,aes(x=Connective, y=meanLogRT1, fill=Connective)) +
 ```
 
 
+# Look at order
 
-# Looing at RT2
-
-## Overall RT2
 ```{r}
-d.rt2$ReactionTime2 <- as.numeric(d.rt2$ReactionTime2)
 
-agr <- d.rt2 %>%
+agr <- d.raw.rt1 %>%
   filter(Connective %in% c("and","but","so"))%>% 
-  group_by(Connective) %>%
-  summarize(meanRT2 = mean(ReactionTime2), CILow = ci.low(ReactionTime2), CIHigh = ci.high(ReactionTime2)) %>% 
-  mutate(YMin = meanRT2 - CILow, YMax = meanRT2 + CIHigh)
+  group_by(Connective,Order) %>%
+  summarize(meanRT1 = mean(ReactionTime1), CILow = ci.low(ReactionTime1), CIHigh = ci.high(ReactionTime1)) %>% 
+  mutate(YMin = meanRT1 - CILow, YMax = meanRT1 + CIHigh)
 
 dodge = position_dodge(.9)
-ggplot(agr,aes(x=Connective, y=meanRT2, fill=Connective)) +
+ggplot(agr,aes(x=Connective, y=meanRT1, fill=Connective)) +
+    facet_wrap(~Order) +
     geom_bar(position=dodge,stat="identity") +
     geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge)
 ```
 
-
-
-
-## Overall Log RT2
 ```{r}
-agr <- d.rt2 %>%
+agr <- d.log.rt1 %>%
   filter(Connective %in% c("and","but","so"))%>% 
-  group_by(Connective) %>%
-  summarize(logRT2= log(ReactionTime2), meanLogRT2 = mean(logRT2), CILow = ci.low(logRT2), CIHigh = ci.high(logRT2)) %>% 
-  mutate(YMin = meanLogRT2 - CILow, YMax = meanLogRT2 + CIHigh)
+  group_by(Connective, Order) %>%
+  summarize(meanLogRT1 = mean(LogReactionTime1), CILow = ci.low(LogReactionTime1), CIHigh = ci.high(LogReactionTime1)) %>% 
+  mutate(YMin = meanLogRT1 - CILow, YMax = meanLogRT1 + CIHigh)
 
 dodge = position_dodge(.9)
-ggplot(agr,aes(x=Connective, y=meanLogRT2, fill=Connective)) +
+ggplot(agr,aes(x=Connective, y=meanLogRT1, fill=Connective)) +
+    facet_wrap(~Order) +
     geom_bar(position=dodge,stat="identity") +
     geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge)
-```
-
-

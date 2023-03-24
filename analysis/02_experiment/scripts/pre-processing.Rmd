@@ -1,7 +1,7 @@
 ---
-title: "Pre-processing for Replication of Larralde et Noveck (in prep) with disjunctions in the training"
+title: "Pre-processing for Replication of Larralde et Noveck (in prep) with Disjunction"
 author: Morgan Moyer
-date: 6 March, 2023
+date: 22 March, 2023
 output: html_document
 ---
 
@@ -18,7 +18,8 @@ cbPalette <- c("#56B4E9", "#D55E00", "#009E73","#999999", "#E69F00")
 ```
 
 
-```{r, set wd and read in the data, include=FALSE, warning=FALSE, echo=FALSE}
+```{r set wd and read-in data, include=FALSE, warning=FALSE, echo=FALSE}
+# Set wd
 this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(this.dir)
 source("../../helpers.R")
@@ -58,33 +59,140 @@ read.pcibex <- function(filepath, auto.colnames=TRUE, fun.col=function(col,cols)
 d <- read.pcibex("../data/results.csv")
 ```
 
-
 ```{r}
+d$ReactionTime1 <- as.numeric(d$ReactionTime1)
+d$Connective <- as.factor(d$Connective)
 d$ID = as.factor(d$ID)
-
-dt <- d %>% 
-  filter(Connective %in% c("and","but","so"))
-
-dt$ReactionTime1 <- as.numeric(dt$ReactionTime1)
-summary(dt$ReactionTime1)
-
-View(dt)
-str(dt$Order.number.of.item)
-dt$Order.number.of.item <- as.factor(dt$Order.number.of.item)
-str(dt$Order.number.of.item)
-
-table(dt$Order.number.of.item,dt$ID)
-
 ```
+
+
 
 ```{r}
-# View(d)
-nrow(d) #67440
+# first remove the extra space for some of the connectives
 
-length(unique(d$ID)) # 90
+levels(d$Connective)
+d$Connective[d$Connective =="so "] = "so"
+d$Connective[d$Connective =="and "] = "and"
+d$Connective[d$Connective =="filler and "] = "filler and"
+d$Connective[d$Connective =="filler but "] = "filler but"
+# get rid of the unnecessary levels now
+d$Connective <- droplevels(d$Connective)
+levels(d$Connective)
+
 ```
 
-# Take a look at comments and Problems
+# Need clean up the file to remove all the extra dummy lines so each line is a single observation
+
+```{r}
+length(unique(d$ID)) # 90 subjects as expected
+
+dd <- d %>%
+  # Only filler and test items
+  filter(Label == "test") %>% 
+  select(ID,Connective,ReactionTime1,ReactionTime2,ReactionTime3,TrialID,Label,Wordform,Answeraccuracy,Truthvalue,Sentenceform,Group) %>% 
+  group_by(ID,TrialID) 
+
+d.test <- dd %>% 
+  unique()
+
+length(unique(d.test$ID)) # 80 subjects as expected
+
+# Sanity check
+d.test$ReactionTime1 <- as.numeric(d.test$ReactionTime1)
+mean(d.test$ReactionTime1)
+sd(d.test$ReactionTime1)
+
+mean(dd$ReactionTime1)
+sd(dd$ReactionTime1)
+
+# View(d.test)
+
+nrow(d.test)
+nrow(d.test)/nrow(df)
+nrow(d.test)/nrow(d)
+
+length(unique(d.test$ID)) # 80 subjects as expected
+
+```
+
+
+```{r sanity checking}
+# View(d)
+nrow(d$ID) #67440
+length(unique(d$ID)) # 90
+table(d$ID)
+
+
+
+length(levels(d$ID))
+
+length(levels(d.test$ID))
+
+table(d$ID)
+
+# remove random participants
+d.test <- d %>% 
+  filter(! ID %in% c(
+    "b",
+    "0",
+    "l",
+    "f",
+    "NULL",
+    "t",
+    "Wait success",
+    "CapsLock",
+    "Shift",
+    "e",
+    "n",
+    "y",
+    "s"
+   ))
+
+d.test$ID <- droplevels(d.test$ID)
+
+length(levels(d.test$ID))
+```
+
+
+
+
+
+# Dummy-code binary 'order' variable (first half, second half)
+
+
+
+come back to this, why isn't it working????
+```{r}
+# View(d.test)
+# How many rows per participant?
+table(d.test$ID)
+nrow(d.test)/108
+# how many per half?
+
+
+
+# First create a vector with the two values repeated
+order.vector <- c(rep(x = "first", times = 54), rep(x = "second", times = 54))
+order.vector
+# then add to the df
+d.test$Order <- order.vector
+
+# d.test$Order2 <- cbind(order.vector) 
+
+# sanity check
+table(d.test$ID,d.test$Order)
+```
+
+# Take a look at training items
+```{r}
+d.training <- d %>% 
+  filter(Label == c("warmup1","warmup2")) 
+
+# View(d.training)
+```
+
+
+# Take a look at comments and demo info
 ```{r}
 unique(d$PennElementType)
 gender <- d %>% 
@@ -104,18 +212,17 @@ table(d$Handedness)
 table(d$Age)
 ```
 
-
-
 # Look at Overall Accuracy on Fillers + Test items
 
 ```{r, graph false response fillers}
 
-table(d$Label)
+summary(d.test$Answeraccuracy)
+sd(d.test$Answeraccuracy)
 
-agr <- d %>%
-  filter(Label == "test") %>% 
+agr <- d.test %>%
+  # filter(Label == "test") %>% 
   group_by(Connective) %>%
-  mutate(mean_accuracy = mean(Answeraccuracy))
+  summarize(mean_accuracy = mean(Answeraccuracy))
 
 dodge = position_dodge(.9)
 ggplot(data=agr, aes(x=Connective,y=mean_accuracy,fill=Connective)) +
@@ -141,7 +248,7 @@ ggplot(data=agr, aes(x=Connective,y=mean_accuracy,fill=Connective)) +
 ## Accuracy on Test Trials
 ```{r}
 agr <- d %>%
-  filter(Connective %in% c("and","but","so")) %>% 
+  filter(Connective %in% c("and","and ","but","so", "so ")) %>% 
   group_by(Connective) %>%
   mutate(mean_accuracy = mean(Answeraccuracy))
 
@@ -151,53 +258,71 @@ ggplot(data=agr, aes(x=Connective,y=mean_accuracy,fill=Connective)) +
 ```
 
 
-# Remove participants who are not accurate 
+# Removing participants who are not accurate overall
 
-## Aggregate for overall accuracy (filler and test items)
+## Look at summary statistcs
 ```{r}
-individual.means <- d.test %>% 
+mean(d.test$Answeraccuracy)*100 #92%
+sd(d.test$Answeraccuracy)*100
+
+agr <- d.test %>% 
   # filter(Label == "test") %>% 
   group_by(ID) %>% 
-  summarize(IndividualMeanAccuracy = mean(Answeraccuracy)) 
-
-# look at the lowest values
-head(individual.means[order(individual.means$IndividualMeanAccuracy),])
-
-summary(individual.means$IndividualMeanAccuracy)
+  summarize(IndividualMeanAccuracy = mean(Answeraccuracy)) %>%
+  View()
 
 
-# This criterion is not strict enough
-AccuracyCuttoff.3sd <- mean(d.test$Answeraccuracy) - 3*sd(d.test$Answeraccuracy)
-AccuracyCuttoff.3sd
+d.test %>% 
+  filter(ID == "597cdb8ffa99240001dec26e") %>% 
+  group_by(Connective) %>% 
+  summarise(Mean = mean(Answeraccuracy)) %>% 
+  View()
 
-inacc.3sd <- d.test %>% 
-  # filter(Label == "test") %>% 
-  group_by(ID) %>% 
-  summarize(IndividualMeanAccuracy = mean(Answeraccuracy)) %>% 
-  filter(IndividualMeanAccuracy < AccuracyCuttoff.3sd)
-
-
-# This only removes one participant
-AccuracyCuttoff.2sd <- mean(d.test$Answeraccuracy) - 2.5*sd(d.test$Answeraccuracy)
-AccuracyCuttoff.2sd
-
-inacc.2sd <- d.test %>% 
-  # filter(Label == "test") %>% 
-  group_by(ID) %>% 
-  summarize(IndividualMeanAccuracy = mean(Answeraccuracy)) %>% 
-  filter(IndividualMeanAccuracy < AccuracyCuttoff.2sd)
-
-
-d.test.accurate <- d.test %>% 
-  filter(!ID %in% inacc.2sd$ID)
-
-inacc.2sd$ID
-
-# How many subjects removed?
-1 - nrow(d.test.accurate)/nrow(d.test)
 ```
 
-## otherwise remove anyone below 70% accuracy
+###  Rabbit hole
+Go down a rabbit hole of trying to look at a weird partiticpant who is potentially
+inverting their answers....
+```{r}
+names(d)
+range(d$Results.reception.time)
+
+d$uniqueID <- paste(d$Results.reception.time,d$MD5.hash.of.participant.s.IP.address,sep = '_')
+
+who <- d %>% 
+  filter(ID  == "59e1e960d838ae00018507e3") %>% 
+  View
+
+# Get a person who is really good
+a <- d %>% 
+  filter(uniqueID == "1678722549_00773db099f1c891224bc4344925698d") %>% 
+  filter(Label == "warmup2")
+  
+length(a)
+range(a$Results.reception.time)
+
+
+# Get the person who is not very good
+t <- d %>% 
+  filter(Label == "warmup2") %>%
+  filter(uniqueID == "1678721639_14e2e8ec95f85d45bb8657e81a6e6c83")
+  # filter(ID == "597cdb8ffa99240001dec26e") %>%
+  # View()
+
+range(t$Results.reception.time)
+length(t)
+
+
+range(a$Results.reception.time) - range(t$Results.reception.time)
+
+t <- d %>% 
+  filter(Label == "warmup2") %>%
+  filter(uniqueID == "1678721639_14e2e8ec95f85d45bb8657e81a6e6c83")
+
+```
+
+
+## First remove people who are clearly off by visual inspection
 
 ```{r}
 inacc.below70 <- d.test %>% 
@@ -206,11 +331,51 @@ inacc.below70 <- d.test %>%
   summarize(IndividualMeanAccuracy = mean(Answeraccuracy)) %>% 
   filter(IndividualMeanAccuracy < .7) 
 
-d.test.accurate <- d.test %>% 
-  filter(!ID %in% inacc.below70$ID)
+# View(inacc.below70)
 
-# How much data removed?
+d.test.accurate <- d.test %>% 
+  filter(!ID %in% inacc.below70$ID) 
+
+summary(d.test.accurate$Answeraccuracy)
+
+# View(d.test.accurate)
+# How much data removed total?
 1 - nrow(d.test.accurate)/nrow(d.test)
+```
+
+## Second, Remove people 3sd below the mean answer accuracy
+```{r}
+# Trials were counterbalanced in two lists
+# table(d.test.accurate$ID,d.test.accurate$TrialID)
+
+# First count the number of correct trails per participant
+dc <- d.test.accurate %>% 
+  group_by(ID) %>% 
+  count(Answeraccuracy, ID)
+# View(df)
+
+dc <- dc[dc$Answeraccuracy == "1",]
+summary(dc$n)
+
+# View(dc)
+
+mean(dc$n)
+sd(dc$n)*3
+
+#Isolating the outliers in a third df 
+outliers <- dc[dc$n < mean(dc$n)-(sd(dc$n)*3),]
+
+
+length(outliers$ID)
+head(outliers)
+
+nrow(dc) # 8640
+
+d.test.accurate.outliers.removed <- d.test.accurate %>% 
+  filter(!ID %in% outliers$ID)
+
+# how much data removed with this step?
+1 - nrow(d.test.accurate.outliers.removed)/nrow(d.test.accurate)
 
 ```
 
@@ -218,92 +383,82 @@ d.test.accurate <- d.test %>%
 # remove unsucessful trials 
 
 ```{r}
-d.test.accurate.sucessful <- d.test.accurate %>% 
+# Only test items 
+d.test.accurate.outliers.removed.nofillers <- d.test.accurate.outliers.removed %>% 
+  filter(Connective %in% c("and","but","so"))
+
+# Remove unsuccessful trials
+d.test.accurate.sucessful <- d.test.accurate.outliers.removed %>% 
+  # Only look at the test trials
+  filter(Connective %in% c("and","but","so")) %>%
   group_by(ID,TrialID) %>% 
   filter(Answeraccuracy != "0")
 
-# How much removed?
-1 - nrow(d.test.accurate.sucessful)/nrow(d.test.accurate)
+# Percentage of correct responses?
+nrow(d.test.accurate.sucessful)/nrow(d.test.accurate.outliers.removed.nofillers)*100
 ```
 
 
 # Outlier removal for ReactionTime1
 
-## Raw RT1
-```{r, trialRT outliers}
+## Look at the summary stats pre-removal of the raw
+```{r}
 d.test.accurate.sucessful$ReactionTime1 <- as.numeric(d.test.accurate.sucessful$ReactionTime1)
-
-summary(d.test.accurate.sucessful$ReactionTime1)
-sd(d.test.accurate.sucessful$ReactionTime1)
-
-hist(d.test.accurate.sucessful$ReactionTime1, breaks=20, col="red", xlab="RT (ms)",
-        main="Histogram with Normal Curve")
-
 
 mean(d.test.accurate.sucessful$ReactionTime1)
 sd(d.test.accurate.sucessful$ReactionTime1)
- 
-# cutoff criterion 2.5 * sd of mean 
-n <- sd(d.test.accurate.sucessful$ReactionTime1)*2.5 # 28192.71
-n
+summary(d.test.accurate.sucessful$ReactionTime1)
 
-# lower bound doesn't make sense for rawRT in this way, instead should think about
-# another way
-lower <- mean(d.test.accurate.sucessful$ReactionTime1) - n
-lower
-upper <- mean(d.test.accurate.sucessful$ReactionTime1) + n
-upper
+range(d.test.accurate.sucessful$ReactionTime1)
 
-# remove subjects with RT higher than 3 x IQR
-d.test.accurate.sucessful.no.outliers <- d.test.accurate.sucessful %>% 
-  filter((ReactionTime1 < upper) | (ReactionTime1) > lower)
-
-hist(d.test.accurate.sucessful.no.outliers$ReactionTime1, breaks=20, col="red", xlab="RT (ms)",
+hist(d.test.accurate.sucessful$ReactionTime1,breaks=20, col="red", xlab="RT (ms)",
         main="Histogram with Normal Curve")
-
-# Finally how much from total raw test data?
-1 - nrow(d.test.accurate.sucessful.no.outliers)/nrow(d.test) # almost 9%
-```
-
-```{r}
-write.csv(d.test.accurate.sucessful.no.outliers,"../data/raw_rt1_processed.csv")
 ```
 
 
-## Same thing but using logRT
+## Convert to LogReaction time so that the data is normally distributed
 ```{r, logRT1 outliers}
+# Create the LogRT measure
 d.test.accurate.sucessful$LogReactionTime1 <- as.numeric(log(d.test.accurate.sucessful$ReactionTime1))
 
 mean(d.test.accurate.sucessful$LogReactionTime1)
 sd(d.test.accurate.sucessful$LogReactionTime1)
 summary(d.test.accurate.sucessful$LogReactionTime1)
+range(d.test.accurate.sucessful$LogReactionTime1)
 
 hist(d.test.accurate.sucessful$LogReactionTime1,breaks=20, col="red", xlab="RT (ms)",
         main="Histogram with Normal Curve")
 
-# cutoff criterion 2.5 * sd of mean 
+```
+
+## cutoff criterion 2.5 * sd of mean 
+```{r}
+
 n <- sd(d.test.accurate.sucessful$LogReactionTime1)*2.5 # 28192.71
 n
 
 lower <- mean(d.test.accurate.sucessful$LogReactionTime1) - n
 upper <- mean(d.test.accurate.sucessful$LogReactionTime1) + n
+lower
+upper
 
-# remove subjects with RT higher than 3 x IQR
 d.test.accurate.sucessful.no.outliers <- d.test.accurate.sucessful %>% 
-  filter((LogReactionTime1 < upper) | (LogReactionTime1) > lower)
+  filter(LogReactionTime1 < upper) %>% 
+  filter(LogReactionTime1 > lower)
 
 summary(d.test.accurate.sucessful.no.outliers$LogReactionTime1)
 sd(d.test.accurate.sucessful.no.outliers$LogReactionTime1)
+range(d.test.accurate.sucessful.no.outliers$LogReactionTime1)
 
-hist(d.test.accurate.sucessful.no.outliers$LogReactionTime1, breaks=20, col="red", xlab="RT (ms)",
+
+hist(d.test.accurate.sucessful.no.outliers$LogReactionTime1, breaks=20, col="red", xlab="RT (log ms)",
         main="Histogram with Normal Curve")
 
 # Finally how much from total raw test data?
-1 - nrow(d.test.accurate.sucessful.no.outliers)/nrow(d.test) # almost 9%
+1 - nrow(d.test.accurate.sucessful.no.outliers)/nrow(d.test.accurate.sucessful) # almost 1%
 ```
 
 ```{r}
 write.csv(d.test.accurate.sucessful.no.outliers,"../data/log_rt1_processed.csv")
 ```
-
 
