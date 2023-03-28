@@ -25,20 +25,17 @@ this.dir <- dirname(rstudioapi::getSourceEditorContext()$path)
 setwd(this.dir)
 source("../../helpers.R")
 
-# d.raw.rt1 <- read.csv("../data/raw_rt1_processed.csv")
-d.log.rt1 <- read.csv("../data/log_rt1_processed.csv")
+d <- read.csv("../data/log_rt1_processed.csv")
+d$ReactionTime1 <- as.numeric(d$ReactionTime1)
+d$LogReactionTime1 <- as.numeric(d$LogReactionTime1)
 
-# d.rt2 <- read.csv("../data/rt2_double_processed.csv")
 ```
 
 # Looing at RT1
 
 ## Overall raw RT 1
 ```{r}
-d.log.rt1$ReactionTime1 <- as.numeric(d.log.rt1$ReactionTime1)
-
-agr <- d.log.rt1 %>%
-  filter(Connective %in% c("and","but","so"))%>% 
+agr <- d %>%
   group_by(Connective) %>%
   summarize(meanRT1 = mean(ReactionTime1), CILow = ci.low(ReactionTime1), CIHigh = ci.high(ReactionTime1)) %>% 
   mutate(YMin = meanRT1 - CILow, YMax = meanRT1 + CIHigh)
@@ -47,14 +44,13 @@ dodge = position_dodge(.9)
 ggplot(agr,aes(x=Connective, y=meanRT1, fill=Connective)) +
     geom_bar(position=dodge,stat="identity") +
     geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge)
+
+# ggsave("../graphs/Ex2_RawRT.pdf",width=6,height=4)
 ```
 
 #Log RT
 ```{r}
-d.log.rt1$LogReactionTime1 <- as.numeric(d.log.rt1$LogReactionTime1)
-
-agr <- d.log.rt1 %>%
-  filter(Connective %in% c("and","but","so"))%>% 
+agr <- d %>%
   group_by(Connective) %>%
   summarize(meanLogRT1 = mean(LogReactionTime1), CILow = ci.low(LogReactionTime1), CIHigh = ci.high(LogReactionTime1)) %>% 
   mutate(YMin = meanLogRT1 - CILow, YMax = meanLogRT1 + CIHigh)
@@ -63,35 +59,50 @@ dodge = position_dodge(.9)
 ggplot(agr,aes(x=Connective, y=meanLogRT1, fill=Connective)) +
     geom_bar(position=dodge,stat="identity") +
     geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge)
+
+# ggsave("../graphs/Ex2_LogRT.pdf",width=6,height=4)
 ```
 
 
-# Look at order
+# Look at BinaryOrder
 
 ```{r}
 
-agr <- d.raw.rt1 %>%
-  filter(Connective %in% c("and","but","so"))%>% 
-  group_by(Connective,Order) %>%
+agr <- d %>%
+  group_by(Connective,OrderBinary) %>%
   summarize(meanRT1 = mean(ReactionTime1), CILow = ci.low(ReactionTime1), CIHigh = ci.high(ReactionTime1)) %>% 
   mutate(YMin = meanRT1 - CILow, YMax = meanRT1 + CIHigh)
 
 dodge = position_dodge(.9)
-ggplot(agr,aes(x=Connective, y=meanRT1, fill=Connective)) +
-    facet_wrap(~Order) +
+ggplot(agr,aes(x=Connective, y=meanRT1, fill=OrderBinary)) +
     geom_bar(position=dodge,stat="identity") +
     geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge)
+
+# ggsave("../graphs/Ex2_OrderBinary.pdf",width=6,height=4)
 ```
 
+
+
+# Look at OrderTrial
+
 ```{r}
-agr <- d.log.rt1 %>%
-  filter(Connective %in% c("and","but","so"))%>% 
-  group_by(Connective, Order) %>%
-  summarize(meanLogRT1 = mean(LogReactionTime1), CILow = ci.low(LogReactionTime1), CIHigh = ci.high(LogReactionTime1)) %>% 
-  mutate(YMin = meanLogRT1 - CILow, YMax = meanLogRT1 + CIHigh)
+d$OrderTrials <- as.factor(d$OrderTrials)
+
+agr <- d %>%
+  group_by(OrderTrials,Connective) %>%
+  summarize(meanRT1 = mean(ReactionTime1), CILow = ci.low(ReactionTime1), CIHigh = ci.high(ReactionTime1)) %>% 
+  mutate(YMin = meanRT1 - CILow, YMax = meanRT1 + CIHigh)
 
 dodge = position_dodge(.9)
-ggplot(agr,aes(x=Connective, y=meanLogRT1, fill=Connective)) +
-    facet_wrap(~Order) +
-    geom_bar(position=dodge,stat="identity") +
-    geom_errorbar(aes(ymin=YMin,ymax=YMax),width=.25,position=dodge)
+ggplot(agr,aes(x=OrderTrials, y=meanRT1, fill=Connective)) +
+  # geom_point() +
+  geom_smooth() +
+  
+  geom_dotplot(binaxis='y', stackdir='center',stackratio=1, dotsize=.7)
+  # facet_wrap(~Connective)
+
+
+```
+
+
+
