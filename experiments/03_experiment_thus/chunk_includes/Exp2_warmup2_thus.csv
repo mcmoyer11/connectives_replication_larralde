@@ -1,0 +1,43 @@
+Screen11,Screen12,Screen13,Screen1,Screen2,Answer,Feedback
+P,R,O,There is a P thus,there is a T.,x,J
+M,A,T,There is an N thus,there is an R.,x,F
+B,A,T,There is a B thus,there is no T.,x,F
+P, I,T,There is a P thus,there is an E.,x,J
+D,O,T,There is a D thus,there is a V.,x,J
+C,U,T,There is a C thus,there is no T.,x,J
+C,A,N,There is a K thus,there is no N.,x,F
+P,R,O,There is a G thus,there is no R.,x,F
+M,A,T,There is an M thus,there is no P.,x,J
+B,A,T,There is a P thus,there is a T.,x,J
+P, I,T,There is a D thus,there is an A.,x,F
+B,E,D,There is a T thus,there is no B.,F,F
+C,U,T,There is a B thus,there is no T.,F,F
+C,R,Y,There is a C thus,there is an N.,J,J
+P,R,O,There is a U thus,there is an R.,J,J
+M,A,T,There is a K thus,there is a T.,J,J
+B,A,T,There is a C thus,there is no T.,F,F
+P,I,T,There is a W thus,there is an E.,F,F
+D,O,T,There is a D thus,there is no V.,J,J
+C,U,T,There is an L thus,there is no T.,F,F
+C,A,N,There is a C thus,there is an N.,J,J
+P,R,O,There is a J thus,there is no R.,F,F
+M,A,T,There is an M thus,there is no P.,J,J
+B,A,T,There is a B thus,there is a Q.,J,J
+P, I,T,There is a D thus,there is an E.,F,F
+B,E,D,There is no D thus,there is a B.,J,J
+C,U,T,There is a V thus,there is no T.,F,F
+C,R,Y,There is an I thus,there is an N.,F,F
+P,R,O,There is a P thus,there is an A.,J,J
+M,A,T,There is an M thus,there is an X.,J,J
+B,A,T,There is an L thus,there is no T.,F,F
+P, I,T,There is a B thus,there is an E.,F,F
+D,O,T,There is a D thus,there is no T.,J,J
+C,U,T,There is an M thus,there is no T.,F,F
+C,A,N,There is a P thus,there is an N.,J,J
+P,R,O,There is a C thus,there is no R.,F,F
+M,A,T,There is an E thus,there is no P.,J,J
+B,A,T,There is a B thus,there is an N.,J,J
+P,I,T,There is an R thus,there is a Y.,F,F
+B,E,D,There is a D thus,there is a V.,J,J
+C,U,T,There is an F thus,there is no T.,F,F
+C,R,Y,There is an E thus,there is an N.,F,F
