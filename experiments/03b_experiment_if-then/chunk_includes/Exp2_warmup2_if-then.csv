@@ -1,0 +1,43 @@
+Screen11,Screen12,Screen13,Screen1,Screen2,Answer,Feedback
+P,R,O,If there is a P then,there is a T.,x,F
+M,A,T,If there is an N then,there is an R.,x,J
+B,A,T,If there is a B then,there is no Q.,x,J
+P, I,T,If there is a P then,there is an E.,x,F
+D,O,T,If there is a D then,there is a T.,x,J
+C,U,T,If there is a C then,there is no T.,x,F
+C,A,N,If there is a K then,there is no N.,x,J
+P,R,O,If there is a G then,there is no R.,x,J
+M,A,T,If there is an M then,there is no P.,x,J
+B,A,T,If there is a P then,there is a T.,x,J
+P, I,T,If there is a P then,there is an A.,x,F
+B,E,D,If there is a T then,there is no C.,F,J
+C,U,T,If there is a B then,there is no T.,F,J
+C,R,Y,If there is a C then,there is an N.,J,F
+P,R,O,If there is a U then,there is an R.,J,J
+M,A,T,If there is a K then,there is a T.,J,J
+B,A,T,If there is a C then,there is no T.,F,J
+P,I,T,If there is a W then,there is an E.,F,J
+D,O,T,If there is a D then,there is no O.,J,F
+C,U,T,If there is a U then,there is no T.,F,F
+C,A,N,If there is a C then,there is an N.,J,J
+P,R,O,If there is a J then,there is no R.,F,J
+M,A,T,If there is an M then,there is no P.,J,J
+B,A,T,If there is a B then,there is a Q.,J,F
+P, I,T,If there is a D then,there is an E.,F,J
+B,E,D,If there is no D then,there is a B.,J,J
+C,U,T,If there is a V then,there is no T.,F,J
+C,R,Y,If there is an I then,there is an N.,F,J
+P,R,O,If there is a P then,there is an A.,J,F
+M,A,T,If there is an M then,there is an X.,J,F
+B,A,T,If there is an L then,there is no T.,F,J
+P, I,T,If there is a B then,there is an E.,F,J
+D,O,T,If there is a D then,there is no T.,J,F
+C,U,T,If there is an M then,there is no T.,F,J
+C,A,N,If there is a P then,there is an N.,J,J
+P,R,O,If there is a C then,there is no R.,F,J
+M,A,T,If there is an E then,there is no P.,J,J
+B,A,T,If there is a B then,there is an N.,J,F
+P,I,T,If there is an R then,there is a Y.,F,J
+B,E,D,If there is a D then,there is a V.,J,F
+C,U,T,If there is an F then,there is no T.,F,J
+C,R,Y,If there is an E then,there is an N.,F,J
