@@ -56,7 +56,7 @@ summary(m.log.rt1)
 ## Log RT x OrderBinary
 - interaction
 
-```{r, run = FALSE}
+```{r, eval = FALSE}
 centered <- d %>% 
   mutate(cOrderBinary = as.numeric(OrderBinary)-mean(as.numeric(OrderBinary)))
 
@@ -68,7 +68,7 @@ summary(m.order.binary)
 
 ### Model on second half only
 
-```{r, run = FALSE}
+```{r, eval = FALSE}
 
 d.second.half <- d %>% 
   filter(OrderBinary == "second")
@@ -81,7 +81,7 @@ summary(m.log.rt1.second.half)
 
 ## LogRT x OrderTrials
 - Really hard to interpret, so better to do a chi-squared
-```{r, run = FALSE}
+```{r, eval = FALSE}
 m.order.trials = lmer(LogReactionTime1 ~ Connective*OrderTrials + (1+Connective|ID) + (1|TrialID), data=d)
 
 summary(m.order.trials)
@@ -89,7 +89,7 @@ summary(m.order.trials)
 ```
 ### Does the model with OrderTrials explain more than the model without?
 
-```{r, run = FALSE}
+```{r, eval = FALSE}
 anova(m.log.rt1,m.order.trials,test="Chisq")
 ```
 

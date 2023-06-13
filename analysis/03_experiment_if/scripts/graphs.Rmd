@@ -67,7 +67,7 @@ ggplot(agr,aes(x=Connective, y=meanLogRT1, fill=Connective)) +
 
 # Look at BinaryOrder
 
-```{r, run = FALSE}
+```{r, eval = FALSE}
 
 agr <- d %>%
   group_by(Connective,OrderBinary) %>%
@@ -86,7 +86,7 @@ ggplot(agr,aes(x=Connective, y=meanRT1, fill=OrderBinary)) +
 
 # Look at OrderTrial
 
-```{r, run = FALSE}
+```{r, eval = FALSE}
 d$OrderTrials <- as.factor(d$OrderTrials)
 
 agr <- d %>%

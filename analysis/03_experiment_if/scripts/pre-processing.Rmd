@@ -146,7 +146,7 @@ random.IDs <- d %>%
 # Dummy-code binary 'order' variable (first half, second half)
 
 ## Make Binary Order
-```{r}
+```{r, eval = FALSE}
 # View(d.test)
 # How many rows per participant?
 table(d.test$ID)
@@ -179,7 +179,7 @@ head(table(d.test$ID,d.test$OrderBinary))
 ```
 
 ## Then make an Ordinal Order Variable over Trial Number because this is what Cecile did too
-```{r}
+```{r, eval = FALSE}
 trial.order.vector <- rep.int(c(1:108),times=78)
 length(trial.order.vector) == nrow(d.test)
 
@@ -191,7 +191,7 @@ head(table(d.test$ID,d.test$OrderTrials))
 
 
 # Take a look at training items
-```{r, run=FALSE}
+```{r, eval=FALSE}
 d.training <- d %>% 
   filter(Label == c("warmup1","warmup2")) 
 
@@ -200,7 +200,7 @@ d.training <- d %>%
 
 
 # Take a look at comments and demo info
-```{r}
+```{r, eval = FALSE}
 unique(d$PennElementType)
 gender <- d %>% 
   group_by(Gender) %>% 
